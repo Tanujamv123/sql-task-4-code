@@ -1,0 +1,56 @@
+-- ==========================================
+--  AGGREGATE FUNCTIONS & GROUPING
+-- ==========================================
+
+-- COUNT: Count number of books per category
+SELECT c.CategoryName, COUNT(b.BookID) AS TotalBooks
+FROM Category c
+LEFT JOIN Book b ON c.CategoryID = b.CategoryID
+GROUP BY c.CategoryName;
+
+-- 2. COUNT: Count how many authors contributed to each book
+SELECT b.Title, COUNT(ba.AuthorID) AS AuthorCount
+FROM Book b
+LEFT JOIN BookAuthor ba ON b.BookID = ba.BookID
+GROUP BY b.Title;
+
+--  COUNT: Number of loans per member
+SELECT m.FirstName || ' ' || m.LastName AS MemberName,
+       COUNT(l.LoanID) AS TotalLoans
+FROM Member m
+LEFT JOIN Loan1 l ON m.MemberID = l.MemberID
+GROUP BY m.MemberID
+ORDER BY TotalLoans DESC;
+
+--  MIN & MAX: Find earliest and latest loan date for each member
+SELECT m.FirstName || ' ' || m.LastName AS MemberName,
+       MIN(l.LoanDate) AS FirstLoanDate,
+       MAX(l.LoanDate) AS LastLoanDate
+FROM Member m
+LEFT JOIN Loan1 l ON m.MemberID = l.MemberID
+GROUP BY m.MemberID;
+
+--  AVG: Calculate average loan duration (only where ReturnDate is NOT NULL)
+SELECT AVG(julianday(l.ReturnDate) - julianday(l.LoanDate)) AS AvgLoanDays
+FROM Loan1 l
+WHERE l.ReturnDate IS NOT NULL;
+
+--  GROUP BY + HAVING: Show only categories that have more than 1 book
+SELECT c.CategoryName, COUNT(b.BookID) AS TotalBooks
+FROM Category c
+LEFT JOIN Book b ON c.CategoryID = b.CategoryID
+GROUP BY c.CategoryName
+HAVING COUNT(b.BookID) > 1;
+
+-- . GROUP BY + HAVING: Show members who borrowed more than 1 book
+SELECT m.FirstName || ' ' || m.LastName AS MemberName,
+       COUNT(l.LoanID) AS TotalLoans
+FROM Member m
+LEFT JOIN Loan1 l ON m.MemberID = l.MemberID
+GROUP BY m.MemberID
+HAVING COUNT(l.LoanID) > 1;
+
+-- . COUNT with Filter: Count how many books still on loan (ReturnDate IS NULL)
+SELECT COUNT(*) AS ActiveLoans
+FROM Loan1
+WHERE ReturnDate IS NULL;
